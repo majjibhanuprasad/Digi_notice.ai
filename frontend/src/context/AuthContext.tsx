@@ -1,40 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { AuthContext, type User, type RegisterData, type AuthContextType } from './AuthContextDefinition';
+import { API_URL } from '../config/api';
 
-export interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: 'SUPER_ADMIN' | 'DEPARTMENT_ADMIN' | 'STUDENT';
-  department: string | null;
-  academicYear: string | null;
-  profileImage: string;
-  clubs: string[];
-}
-
-export interface RegisterData {
-  name: string;
-  email: string;
-  password: string;
-  role: 'SUPER_ADMIN' | 'DEPARTMENT_ADMIN' | 'STUDENT';
-  department?: string | null;
-  academicYear?: string | null;
-  clubs?: string[];
-}
-
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<User>;
-  register: (data: RegisterData) => Promise<User>;
-  logout: () => void;
-  apiFetch: (url: string, options?: RequestInit) => Promise<Response>;
-  API_URL: string;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+export type { User, RegisterData, AuthContextType };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -121,14 +89,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(data.token);
       setUser(data.user);
       return data.user;
-    } catch (err) {
-      throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (registerData: RegisterData): Promise<User> => {
+  const register = async (registerData: RegisterData): Promise<any> => {
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/auth/register`, {
@@ -145,10 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const data = await res.json();
-      // Return registered user object without auto-logging in
-      return data.user;
-    } catch (err) {
-      throw err;
+      return data;
     } finally {
       setLoading(false);
     }
@@ -165,12 +128,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 };

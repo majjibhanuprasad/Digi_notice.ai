@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { 
   GraduationCap, 
   BarChart2, 
@@ -15,15 +15,13 @@ import {
   AlertTriangle,
   Info,
   CheckCircle,
-  XCircle,
   Eye,
-  Trash2,
-  Calendar,
   AlertOctagon,
-  CornerDownRight,
   TrendingUp,
   Award,
-  Users
+  Users,
+  Menu,
+  X
 } from 'lucide-react';
 
 interface NoticeItem {
@@ -79,6 +77,7 @@ const AdminDashboard: React.FC = () => {
 
   // Navigation state
   const [activeTab, setActiveTab] = useState<'analytics' | 'notices' | 'create' | 'approvals' | 'qa' | 'logs' | 'facultyFeed' | 'superAdminFeed'>('analytics');
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Backend Data States
   const [notices, setNotices] = useState<NoticeItem[]>([]);
@@ -127,19 +126,7 @@ const AdminDashboard: React.FC = () => {
   const [respondingQueryId, setRespondingQueryId] = useState<string | null>(null);
   const [qaAnswerText, setQaAnswerText] = useState('');
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    if (user.role === 'STUDENT') {
-      navigate('/student/dashboard');
-      return;
-    }
-    fetchDashboardData();
-  }, [user, activeTab]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = React.useCallback(async () => {
     setLoading(true);
     try {
       // 1. Fetch Analytics
@@ -176,7 +163,19 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiFetch, user?.role]);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    if (user.role === 'STUDENT') {
+      navigate('/student/dashboard');
+      return;
+    }
+    fetchDashboardData();
+  }, [user, activeTab, navigate, fetchDashboardData]);
 
   // Perform AI notice generation
   const handleAIGenerate = async () => {
@@ -380,7 +379,9 @@ const AdminDashboard: React.FC = () => {
     const formatDateTime = (dateStr: string) => {
       if (!dateStr) return '';
       const d = new Date(dateStr);
-      return d.toISOString().slice(0, 16);
+      if (isNaN(d.getTime())) return '';
+      const offsetMs = d.getTimezoneOffset() * 60000;
+      return new Date(d.getTime() - offsetMs).toISOString().slice(0, 16);
     };
 
     setFormPublishAt(formatDateTime(notice.publishAt));
@@ -562,7 +563,7 @@ const AdminDashboard: React.FC = () => {
                 height={barHeight}
                 fill="#3b82f6"
                 rx="4"
-                className="hover:fill-indigo-650 transition"
+                className="hover:fill-indigo-600 transition"
               />
               <text x={x + barWidth / 2} y={height - 8} textAnchor="middle" className="text-[9px] fill-slate-500 font-bold">{d.name}</text>
               <text x={x + barWidth / 2} y={y - 5} textAnchor="middle" className="text-[10px] fill-slate-800 font-black">{d.value}</text>
@@ -577,34 +578,149 @@ const AdminDashboard: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       
       {/* Navbar Header */}
-      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between z-10 shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-purple-600 rounded-lg text-white">
+      <header className="bg-white border-b border-slate-200 px-3.5 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-20 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Mobile hamburger toggle button */}
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="lg:hidden p-2 -ml-1 text-slate-600 hover:bg-slate-100 rounded-xl transition"
+            aria-label="Open Admin Menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          <div className="p-1.5 bg-purple-600 rounded-xl text-white shadow-xs">
             <GraduationCap className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-lg font-bold text-slate-900 tracking-tight">DigiNotice</span>
-            <span className="ml-1 text-xs font-semibold px-1.5 py-0.2 bg-purple-50 text-purple-700 rounded-full">Admin</span>
+            <span className="text-base sm:text-lg font-black text-slate-900 tracking-tight">DigiNotice</span>
+            <span className="ml-1 text-[10px] sm:text-xs font-extrabold px-1.5 py-0.2 bg-purple-50 text-purple-700 rounded-full">Admin</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full uppercase">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <span className="hidden sm:inline-block text-[10px] sm:text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full uppercase">
             {user?.role.replace('_', ' ')}: {user?.department || 'System'}
           </span>
           <button 
             onClick={logout}
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition"
+            className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 p-1.5 sm:p-2 rounded-xl hover:bg-slate-100 sm:hover:bg-transparent transition"
           >
-            <LogOut className="w-4 h-4" /> Logout
+            <LogOut className="w-4 h-4" /> <span className="hidden sm:inline">Logout</span>
           </button>
         </div>
       </header>
 
+      {/* Mobile Slide-over Sidebar Drawer (for Mobile & Tablet) */}
+      {mobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+
+          {/* Drawer Panel */}
+          <div className="relative w-72 max-w-[85vw] bg-white h-full shadow-2xl flex flex-col justify-between p-4 z-10 animate-in slide-in-from-left duration-200">
+            <div>
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-purple-600 rounded-lg text-white">
+                    <GraduationCap className="w-5 h-5" />
+                  </div>
+                  <span className="font-extrabold text-slate-900 text-base">Admin Panel</span>
+                </div>
+                <button 
+                  onClick={() => setMobileSidebarOpen(false)}
+                  className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Logged in Info Card */}
+              <div className="p-3 my-3 bg-purple-50 border border-purple-100 rounded-xl text-xs font-bold text-purple-900">
+                <div className="text-[10px] uppercase text-purple-600 font-extrabold">Logged In As</div>
+                <div className="text-sm font-black mt-0.5">{user?.name}</div>
+                <div className="text-[10px] text-purple-700 mt-0.5 uppercase">{user?.role.replace('_', ' ')} &bull; {user?.department || 'Campus System'}</div>
+              </div>
+
+              {/* Navigation buttons */}
+              <div className="space-y-1 mt-2">
+                <button
+                  onClick={() => { setActiveTab('analytics'); setMobileSidebarOpen(false); }}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-3 ${activeTab === 'analytics' ? 'bg-purple-50 text-purple-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <BarChart2 className="w-4 h-4" /> Dashboard Analytics
+                </button>
+                <button
+                  onClick={() => { setActiveTab('notices'); setMobileSidebarOpen(false); }}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-3 ${activeTab === 'notices' ? 'bg-purple-50 text-purple-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <FileText className="w-4 h-4" /> Manage Notices
+                </button>
+                <button
+                  onClick={() => { resetForm(); setActiveTab('create'); setMobileSidebarOpen(false); }}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-3 ${activeTab === 'create' ? 'bg-purple-50 text-purple-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <PlusCircle className="w-4 h-4" /> Create Notice
+                </button>
+                <button
+                  onClick={() => { setActiveTab('qa'); setMobileSidebarOpen(false); }}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-3 ${activeTab === 'qa' ? 'bg-purple-50 text-purple-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <HelpCircle className="w-4 h-4" /> Student Q&A Threads
+                </button>
+                {user?.role === 'DEPARTMENT_ADMIN' && (
+                  <button
+                    onClick={() => { setActiveTab('facultyFeed'); setMobileSidebarOpen(false); }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-3 ${activeTab === 'facultyFeed' ? 'bg-purple-50 text-purple-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    <Award className="w-4 h-4" /> Principal's Desk
+                  </button>
+                )}
+                {user?.role === 'SUPER_ADMIN' && (
+                  <button
+                    onClick={() => { setActiveTab('superAdminFeed'); setMobileSidebarOpen(false); }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-3 ${activeTab === 'superAdminFeed' ? 'bg-purple-50 text-purple-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    <Users className="w-4 h-4" /> HOD Communications
+                  </button>
+                )}
+                {user?.role === 'SUPER_ADMIN' && (
+                  <button
+                    onClick={() => { setActiveTab('approvals'); setMobileSidebarOpen(false); }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-3 ${activeTab === 'approvals' ? 'bg-purple-50 text-purple-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    <CheckSquare className="w-4 h-4" /> Notice Approvals
+                  </button>
+                )}
+                {user?.role === 'SUPER_ADMIN' && (
+                  <button
+                    onClick={() => { setActiveTab('logs'); setMobileSidebarOpen(false); }}
+                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-3 ${activeTab === 'logs' ? 'bg-purple-50 text-purple-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    <FileLock className="w-4 h-4" /> System Audit Logs
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <button
+              onClick={logout}
+              className="w-full py-2.5 px-4 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-700 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2"
+            >
+              <LogOut className="w-4 h-4" /> Sign Out
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 flex overflow-hidden">
         
-        {/* Sidebar Nav */}
-        <aside className="w-64 bg-white border-r border-slate-200 flex flex-col p-4 shrink-0">
+        {/* Desktop Permanent Sidebar */}
+        <aside className="w-64 bg-white border-r border-slate-200 hidden lg:flex flex-col p-4 shrink-0">
           <div className="space-y-1.5">
             <button
               onClick={() => setActiveTab('analytics')}
@@ -683,7 +799,7 @@ const AdminDashboard: React.FC = () => {
         </aside>
 
         {/* Dashboard Main Content */}
-        <main className="flex-1 overflow-y-auto p-6 bg-slate-50">
+        <main className="flex-1 overflow-y-auto p-3.5 sm:p-6 bg-slate-50">
           
           {loading ? (
             <div className="flex flex-col items-center justify-center py-24">
@@ -696,77 +812,77 @@ const AdminDashboard: React.FC = () => {
               {activeTab === 'analytics' && analyticsData && (
                 <div className="space-y-6">
                   {/* Summary counts cards */}
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                    <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
                       <div>
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Total Notices</span>
-                        <h4 className="text-2xl font-black text-slate-900 mt-1">{analyticsData.summary.totalNotices}</h4>
+                        <h4 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">{analyticsData.summary.totalNotices}</h4>
                       </div>
-                      <div className="p-3 bg-purple-50 text-purple-600 rounded-xl"><FileText className="w-6 h-6" /></div>
+                      <div className="p-3 bg-purple-50 text-purple-600 rounded-xl"><FileText className="w-5 h-5 sm:w-6 sm:h-6" /></div>
                     </div>
-                    <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
                       <div>
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Active Notices</span>
-                        <h4 className="text-2xl font-black text-slate-900 mt-1">{analyticsData.summary.activeNotices}</h4>
+                        <h4 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">{analyticsData.summary.activeNotices}</h4>
                       </div>
-                      <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><CheckCircle className="w-6 h-6" /></div>
+                      <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><CheckCircle className="w-5 h-5 sm:w-6 sm:h-6" /></div>
                     </div>
-                    <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
                       <div>
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Total Views</span>
-                        <h4 className="text-2xl font-black text-slate-900 mt-1">{analyticsData.summary.totalViews}</h4>
+                        <h4 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">{analyticsData.summary.totalViews}</h4>
                       </div>
-                      <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Eye className="w-6 h-6" /></div>
+                      <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Eye className="w-5 h-5 sm:w-6 sm:h-6" /></div>
                     </div>
-                    <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
                       <div>
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Critical Ack Rate</span>
-                        <h4 className="text-2xl font-black text-slate-900 mt-1">{analyticsData.charts.criticalAckRate}%</h4>
+                        <h4 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">{analyticsData.charts.criticalAckRate}%</h4>
                       </div>
-                      <div className="p-3 bg-red-50 text-red-600 rounded-xl"><AlertOctagon className="w-6 h-6" /></div>
+                      <div className="p-3 bg-red-50 text-red-600 rounded-xl"><AlertOctagon className="w-5 h-5 sm:w-6 sm:h-6" /></div>
                     </div>
                   </div>
 
                   {/* SVG Charts section */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-white p-5 border border-slate-200 rounded-2xl shadow-sm">
-                      <h4 className="font-bold text-sm text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="bg-white p-4 sm:p-5 border border-slate-200 rounded-2xl shadow-sm">
+                      <h4 className="font-bold text-xs sm:text-sm text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
                         <TrendingUp className="w-4 h-4 text-purple-600" /> Notice views over time
                       </h4>
-                      <div className="h-44 flex items-center justify-center bg-slate-50/50 p-2 rounded-xl border border-slate-100">
+                      <div className="h-44 flex items-center justify-center bg-slate-50/50 p-2 rounded-xl border border-slate-100 overflow-x-auto min-w-0">
                         {renderViewsLineChart()}
                       </div>
                     </div>
-                    <div className="bg-white p-5 border border-slate-200 rounded-2xl shadow-sm">
-                      <h4 className="font-bold text-sm text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                    <div className="bg-white p-4 sm:p-5 border border-slate-200 rounded-2xl shadow-sm">
+                      <h4 className="font-bold text-xs sm:text-sm text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-1.5">
                         <Award className="w-4 h-4 text-blue-600" /> Notices by category
                       </h4>
-                      <div className="h-44 flex items-center justify-center bg-slate-50/50 p-2 rounded-xl border border-slate-100">
+                      <div className="h-44 flex items-center justify-center bg-slate-50/50 p-2 rounded-xl border border-slate-100 overflow-x-auto min-w-0">
                         {renderCategoryBarChart()}
                       </div>
                     </div>
                   </div>
 
                   {/* Top lists table */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-white p-5 border border-slate-200 rounded-2xl shadow-sm">
-                      <h4 className="font-bold text-sm text-slate-800 uppercase tracking-wider mb-4">🏆 Most Viewed Notices</h4>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="bg-white p-4 sm:p-5 border border-slate-200 rounded-2xl shadow-sm">
+                      <h4 className="font-bold text-xs sm:text-sm text-slate-800 uppercase tracking-wider mb-4">🏆 Most Viewed Notices</h4>
                       <div className="space-y-2">
                         {analyticsData.charts.mostViewed.map((n: any, idx: number) => (
-                          <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-150 rounded-xl text-xs">
-                            <span className="font-bold text-slate-800 truncate max-w-xs">{n.title}</span>
-                            <span className="font-bold text-indigo-650 bg-indigo-50 px-2 py-0.5 rounded-full">{n.views} views</span>
+                          <div key={idx} className="flex items-center justify-between p-2.5 sm:p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs gap-2">
+                            <span className="font-bold text-slate-800 truncate max-w-[200px] sm:max-w-xs">{n.title}</span>
+                            <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full shrink-0">{n.views} views</span>
                           </div>
                         ))}
                       </div>
                     </div>
-                    <div className="bg-white p-5 border border-slate-200 rounded-2xl shadow-sm">
-                      <h4 className="font-bold text-sm text-slate-800 uppercase tracking-wider mb-4">📝 High Engagement Notices</h4>
+                    <div className="bg-white p-4 sm:p-5 border border-slate-200 rounded-2xl shadow-sm">
+                      <h4 className="font-bold text-xs sm:text-sm text-slate-800 uppercase tracking-wider mb-4">📝 High Engagement Notices</h4>
                       <div className="space-y-2">
                         {analyticsData.charts.mostAcknowledged.map((n: any, idx: number) => (
-                          <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-150 rounded-xl text-xs">
-                            <span className="font-bold text-slate-800 truncate max-w-xs">{n.title}</span>
-                            <span className="font-bold text-emerald-650 bg-emerald-50 px-2 py-0.5 rounded-full">{n.acknowledgements} Acks</span>
+                          <div key={idx} className="flex items-center justify-between p-2.5 sm:p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs gap-2">
+                            <span className="font-bold text-slate-800 truncate max-w-[200px] sm:max-w-xs">{n.title}</span>
+                            <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">{n.acknowledgements} Acks</span>
                           </div>
                         ))}
                       </div>
@@ -777,10 +893,10 @@ const AdminDashboard: React.FC = () => {
 
               {/* TAB 2: MANAGE NOTICES LIST */}
               {activeTab === 'notices' && (
-                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
-                  <h3 className="font-extrabold text-lg text-slate-900 tracking-tight">Active Notices Dashboard</h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs border-collapse">
+                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6 space-y-4">
+                  <h3 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">Active Notices Dashboard</h3>
+                  <div className="overflow-x-auto -mx-4 sm:mx-0">
+                    <table className="w-full text-left text-xs border-collapse min-w-[620px]">
                       <thead>
                         <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider bg-slate-50">
                           <th className="py-3 px-4">Title</th>
@@ -832,7 +948,7 @@ const AdminDashboard: React.FC = () => {
                                     </button>
                                     <button
                                       onClick={() => handleRejectClick(notice._id)}
-                                      className="px-2 py-1 border border-red-200 hover:bg-red-50 text-red-650 rounded text-[10px] font-bold transition"
+                                      className="px-2 py-1 border border-red-200 hover:bg-red-50 text-red-600 rounded text-[10px] font-bold transition"
                                       title="Reject"
                                     >
                                       Reject
@@ -1138,7 +1254,7 @@ const AdminDashboard: React.FC = () => {
                           type="button"
                           disabled={aiGenerating}
                           onClick={handleAIGenerate}
-                          className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-650 hover:from-purple-500 hover:to-indigo-550 disabled:bg-slate-800 text-white text-xs font-extrabold rounded-xl shadow-lg flex items-center justify-center gap-1.5 transition"
+                          className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:bg-slate-800 text-white text-xs font-extrabold rounded-xl shadow-lg flex items-center justify-center gap-1.5 transition"
                         >
                           {aiGenerating ? (
                             <>
@@ -1209,7 +1325,7 @@ const AdminDashboard: React.FC = () => {
                         </div>
 
                         {safetyWarnings.length === 0 ? (
-                          <div className="text-xs text-slate-550 flex items-center gap-1.5 p-3 bg-emerald-50/50 border border-emerald-100 rounded-xl">
+                          <div className="text-xs text-slate-500 flex items-center gap-1.5 p-3 bg-emerald-50/50 border border-emerald-100 rounded-xl">
                             <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
                             <span className="font-semibold text-emerald-800">Passes validation checks! Document is complete.</span>
                           </div>
@@ -1232,10 +1348,10 @@ const AdminDashboard: React.FC = () => {
 
               {/* TAB 4: APPROVALS (Super Admin only) */}
               {activeTab === 'approvals' && (
-                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
-                  <h3 className="font-extrabold text-lg text-slate-900 tracking-tight">Notice Review & Approvals Queue</h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs border-collapse">
+                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6 space-y-4">
+                  <h3 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">Notice Review & Approvals Queue</h3>
+                  <div className="overflow-x-auto -mx-4 sm:mx-0">
+                    <table className="w-full text-left text-xs border-collapse min-w-[560px]">
                       <thead>
                         <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider bg-slate-50">
                           <th className="py-3 px-4">Notice Title</th>
@@ -1259,7 +1375,7 @@ const AdminDashboard: React.FC = () => {
                                 <span className="font-semibold text-slate-700">{notice.createdByName || 'Faculty'}</span>
                               </td>
                               <td className="py-3 px-4">
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${notice.priority === 'CRITICAL' ? 'bg-red-50 text-red-650 border border-red-200' : notice.priority === 'HIGH' ? 'bg-amber-50 text-amber-650' : 'bg-blue-50 text-blue-650'}`}>
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${notice.priority === 'CRITICAL' ? 'bg-red-50 text-red-600 border border-red-200' : notice.priority === 'HIGH' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'}`}>
                                   {notice.priority}
                                 </span>
                               </td>
@@ -1296,17 +1412,17 @@ const AdminDashboard: React.FC = () => {
 
               {/* TAB 5: SYSTEM AUDIT LOGS (Super Admin only) */}
               {activeTab === 'logs' && (
-                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
+                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6 space-y-4">
                   <h3 className="font-extrabold text-lg text-slate-900 tracking-tight">Administrative Action Log Trail</h3>
                   <div className="space-y-3 max-h-[500px] overflow-y-auto">
                     {auditLogs.map((log) => (
-                      <div key={log._id} className="p-3 bg-slate-50 border border-slate-150 rounded-xl text-xs flex items-start gap-3">
+                      <div key={log._id} className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs flex items-start gap-3">
                         <span className="font-mono text-slate-400 text-[10px] shrink-0 mt-0.5">{new Date(log.timestamp).toLocaleTimeString()}</span>
                         <div className="flex-1">
                           <span className="font-black text-slate-900">{log.userName}</span>
                           <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full font-bold ml-2 uppercase shrink-0">{log.userRole.replace('_', ' ')}</span>
-                          <p className="mt-1 font-bold text-slate-650">
-                            {log.action} {log.noticeTitle && <span className="text-indigo-650 font-black">"{log.noticeTitle}"</span>}
+                          <p className="mt-1 font-bold text-slate-600">
+                            {log.action} {log.noticeTitle && <span className="text-indigo-600 font-black">"{log.noticeTitle}"</span>}
                           </p>
                         </div>
                       </div>
@@ -1351,11 +1467,11 @@ const AdminDashboard: React.FC = () => {
 
                         <div className="space-y-1">
                           <span className="block text-[10px] text-slate-400 font-bold uppercase">Question</span>
-                          <p className="text-slate-850 font-bold text-[13px]">{q.question}</p>
+                          <p className="text-slate-800 font-bold text-[13px]">{q.question}</p>
                         </div>
 
                         {q.status === 'Answered' ? (
-                          <div className="p-3 bg-emerald-50/50 border border-emerald-150 rounded-xl space-y-1">
+                          <div className="p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl space-y-1">
                             <div className="flex items-center justify-between">
                               <span className="text-[10px] text-emerald-800 font-black uppercase">Answered by {q.answeredByName}</span>
                               <span className="text-[9px] text-slate-400 font-semibold">{q.answeredAt ? new Date(q.answeredAt).toLocaleDateString() : ''}</span>
@@ -1376,7 +1492,7 @@ const AdminDashboard: React.FC = () => {
                                 <div className="flex flex-col gap-1 shrink-0">
                                   <button
                                     onClick={() => submitQAAnswer(q._id)}
-                                    className="px-3.5 py-2 bg-purple-650 hover:bg-purple-700 text-white rounded-xl text-[10px] font-black uppercase transition"
+                                    className="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-[10px] font-black uppercase transition"
                                   >
                                     Submit
                                   </button>
@@ -1437,7 +1553,7 @@ const AdminDashboard: React.FC = () => {
                             <h4 className="text-[15px] font-black text-slate-800 tracking-tight leading-snug">
                               {notice.title}
                             </h4>
-                            <p className="text-xs text-slate-650 leading-relaxed whitespace-pre-line font-medium">
+                            <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line font-medium">
                               {notice.content}
                             </p>
                           </div>
@@ -1447,7 +1563,7 @@ const AdminDashboard: React.FC = () => {
                             </div>
                             <div>
                               <span className="text-[10px] font-bold text-slate-700 block">{notice.createdByName}</span>
-                              <span className="text-[9px] text-slate-450 block font-semibold">Principal & College Administrator</span>
+                              <span className="text-[9px] text-slate-500 block font-semibold">Principal & College Administrator</span>
                             </div>
                           </div>
                         </div>
@@ -1489,7 +1605,7 @@ const AdminDashboard: React.FC = () => {
                             <h4 className="text-[15px] font-black text-slate-800 tracking-tight leading-snug">
                               {notice.title}
                             </h4>
-                            <p className="text-xs text-slate-650 leading-relaxed whitespace-pre-line font-medium">
+                            <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line font-medium">
                               {notice.content}
                             </p>
                           </div>

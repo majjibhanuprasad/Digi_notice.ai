@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { User } from '../models/Schemas';
 import { MockModel } from '../config/db';
-import { sendActivationEmail } from '../services/emailService';
+import { sendActivationEmail, sendForgotPasswordEmail } from '../services/emailService';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'diginotice_secret_jwt_key_12345';
 
@@ -118,8 +118,11 @@ export const verifyEmail = async (req: Request, res: Response) => {
 
     // Check token expiry
     if (new Date(pending.verificationTokenExpires) < new Date()) {
-      await pendingStore.findByIdAndDelete(pending._id!);
-      return res.status(400).json({ message: 'This activation link has expired. Please sign up again.' });
+      return res.status(400).json({ 
+        message: 'This activation link has expired. Please request a fresh activation link.',
+        expired: true,
+        email: pending.email
+      });
     }
 
     // Double check if user was somehow already saved
@@ -251,14 +254,10 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'No account found with this email address. Please check your email or Sign Up.' });
     }
 
-    // Verify password: check hashed password first, then fallback to demo passwords for seeded users
+    // Verify password against stored hash
     let isMatch = false;
     if (user.password) {
       isMatch = await bcrypt.compare(password.trim(), user.password);
-    }
-    
-    if (!isMatch && (password === 'password123' || password === 'admin123')) {
-      isMatch = true;
     }
 
     if (!isMatch) {
@@ -339,3 +338,150 @@ export const microsoftLoginPlaceholder = async (req: Request, res: Response) => 
     message: 'Microsoft 365 SSO is structured and will be enabled in production. Currently, please use the demo buttons for testing.'
   });
 };
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  try {
+    if (!email) {
+      return res.status(400).json({ message: 'Please enter your email address.' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+
+    // Check if user exists in active User DB
+    const user = await User.findOne({ email: cleanEmail });
+    if (!user) {
+      // Check if registration is still pending
+      const pending = await pendingStore.findOne({ email: cleanEmail });
+      if (pending) {
+        return res.status(400).json({
+          message: 'This account has not been activated yet. Please click the activation link in your email first.'
+        });
+      }
+      return res.status(404).json({
+        message: 'No account found with this email address. Please sign up first.'
+      });
+    }
+
+    // Generate 6-digit verification code
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+
+    // Update user record
+    await User.findByIdAndUpdate(user._id!, {
+      otpCode,
+      otpExpires
+    });
+
+    // Send the verification code email
+    const emailResult = await sendForgotPasswordEmail({
+      toEmail: cleanEmail,
+      userName: user.name || 'Campus Member',
+      resetCode: otpCode
+    });
+
+    let message = 'A 6-digit password reset code has been sent to your email!';
+    if (emailResult.delivered) {
+      message = 'A 6-digit verification code has been sent to your Gmail inbox. Please check your email.';
+    } else if (emailResult.smtpError) {
+      message = `Could not deliver email via SMTP (${emailResult.smtpError}). Please check credentials in backend/.env.`;
+    }
+
+    return res.json({
+      message,
+      email: cleanEmail,
+      delivered: emailResult.delivered,
+      etherealUrl: emailResult.etherealUrl,
+      isSmtpConfigured: emailResult.isConfigured,
+      smtpError: emailResult.smtpError,
+      devCode: !emailResult.delivered ? otpCode : undefined
+    });
+  } catch (err: any) {
+    console.error('Forgot password error:', err);
+    return res.status(500).json({ message: 'Server error processing password reset request.' });
+  }
+};
+
+export const verifyResetCode = async (req: Request, res: Response) => {
+  const { email, code } = req.body;
+
+  try {
+    if (!email || !code) {
+      return res.status(400).json({ message: 'Email and verification code are required.' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanCode = code.toString().trim();
+
+    const user = await User.findOne({ email: cleanEmail });
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this email.' });
+    }
+
+    if (!user.otpCode || user.otpCode !== cleanCode) {
+      return res.status(400).json({ message: 'Invalid verification code. Please check and try again.' });
+    }
+
+    if (user.otpExpires && new Date(user.otpExpires) < new Date()) {
+      return res.status(400).json({ message: 'Verification code has expired. Please request a new code.' });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Verification code verified successfully. You can now set your new password.'
+    });
+  } catch (err: any) {
+    console.error('Verify reset code error:', err);
+    return res.status(500).json({ message: 'Server error verifying reset code.' });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  const { email, code, newPassword } = req.body;
+
+  try {
+    if (!email || !code || !newPassword) {
+      return res.status(400).json({ message: 'Email, verification code, and new password are required.' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanCode = code.toString().trim();
+
+    const user = await User.findOne({ email: cleanEmail });
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this email.' });
+    }
+
+    if (!user.otpCode || user.otpCode !== cleanCode) {
+      return res.status(400).json({ message: 'Invalid verification code.' });
+    }
+
+    if (user.otpExpires && new Date(user.otpExpires) < new Date()) {
+      return res.status(400).json({ message: 'Verification code has expired. Please request a new code.' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword.trim(), 10);
+
+    // Update user password and clear OTP
+    await User.findByIdAndUpdate(user._id!, {
+      password: hashedPassword,
+      otpCode: null,
+      otpExpires: null
+    });
+
+    return res.json({
+      success: true,
+      message: 'Password reset successfully! You can now sign in with your new password.'
+    });
+  } catch (err: any) {
+    console.error('Reset password error:', err);
+    return res.status(500).json({ message: 'Server error resetting password.' });
+  }
+};
+

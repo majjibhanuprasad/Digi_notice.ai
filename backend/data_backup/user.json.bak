@@ -1,0 +1,485 @@
+[
+  {
+    "name": "yashwanth",
+    "email": "yaswanth25811a0i6@gmail.com",
+    "password": "$2a$10$bYOjXaQFoU5.vXtzaNtQX.cozxKsO3tLyr//XQEvjKwXQwU8XlijC",
+    "role": "STUDENT",
+    "department": "CSE",
+    "academicYear": "3rd Year",
+    "profileImage": "https://api.dicebear.com/7.x/initials/svg?seed=yashwanth",
+    "clubs": [
+      "Technical Society",
+      "Coding Club"
+    ],
+    "isVerified": true,
+    "_id": "lzer11jgx",
+    "createdAt": "2026-09-09T04:52:30.510Z",
+    "updatedAt": "2026-09-09T04:53:18.345Z",
+    "otpCode": null,
+    "otpExpires": null
+  },
+  {
+    "name": "bhanuprasad",
+    "email": "majjibhanuprasad143@gmail.com",
+    "password": "$2a$10$Yv2WGYiGsNjCZF77LoaJLeXyOE2wSP.a1kAXWlNKcGIFUydExfdHm",
+    "role": "STUDENT",
+    "department": "CSE",
+    "academicYear": "3rd Year",
+    "profileImage": "https://api.dicebear.com/7.x/initials/svg?seed=bhanuprasad",
+    "clubs": [
+      "Technical Society",
+      "Coding Club"
+    ],
+    "isVerified": true,
+    "_id": "r1nlawck6",
+    "createdAt": "2026-09-09T04:48:50.927Z",
+    "updatedAt": "2026-09-11T12:00:00.000Z",
+    "otpCode": null,
+    "otpExpires": null
+  },
+  {
+    "_id": "user_super_admin_01",
+    "name": "Dr. Alok Verma",
+    "email": "superadmin@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "SUPER_ADMIN",
+    "department": null,
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.047Z",
+    "updatedAt": "2026-09-11T12:15:26.047Z"
+  },
+  {
+    "_id": "user_dept_admin_cse_01",
+    "name": "Prof. Ramesh K. (HOD, CSE)",
+    "email": "cse.faculty@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "DEPARTMENT_ADMIN",
+    "department": "CSE",
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1544005313?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.051Z",
+    "updatedAt": "2026-09-11T12:15:26.051Z"
+  },
+  {
+    "_id": "user_dept_admin_csm_01",
+    "name": "Dr. Srinivas Rao (HOD, CSM)",
+    "email": "csm.faculty@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "DEPARTMENT_ADMIN",
+    "department": "CSM",
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1544006547?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.052Z",
+    "updatedAt": "2026-09-11T12:15:26.052Z"
+  },
+  {
+    "_id": "user_dept_admin_csd_01",
+    "name": "Prof. Anirudh Sen (HOD, CSD)",
+    "email": "csd.faculty@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "DEPARTMENT_ADMIN",
+    "department": "CSD",
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1544007781?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.053Z",
+    "updatedAt": "2026-09-11T12:15:26.053Z"
+  },
+  {
+    "_id": "user_dept_admin_ece_01",
+    "name": "Prof. Sunita Rao (HOD, ECE)",
+    "email": "ece.faculty@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "DEPARTMENT_ADMIN",
+    "department": "ECE",
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1544009015?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.054Z",
+    "updatedAt": "2026-09-11T12:15:26.054Z"
+  },
+  {
+    "_id": "user_dept_admin_eee_01",
+    "name": "Dr. Vijay Kumar (HOD, EEE)",
+    "email": "eee.faculty@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "DEPARTMENT_ADMIN",
+    "department": "EEE",
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1544010249?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.056Z",
+    "updatedAt": "2026-09-11T12:15:26.056Z"
+  },
+  {
+    "_id": "user_dept_admin_mech_01",
+    "name": "Prof. Balaji Naidu (HOD, Mech)",
+    "email": "mech.faculty@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "DEPARTMENT_ADMIN",
+    "department": "Mech",
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1544011483?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.057Z",
+    "updatedAt": "2026-09-11T12:15:26.057Z"
+  },
+  {
+    "_id": "user_dept_admin_civil_01",
+    "name": "Dr. Madhavan Pillai (HOD, Civil)",
+    "email": "civil.faculty@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "DEPARTMENT_ADMIN",
+    "department": "Civil",
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1544012717?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.058Z",
+    "updatedAt": "2026-09-11T12:15:26.058Z"
+  },
+  {
+    "_id": "user_dept_admin_it_01",
+    "name": "Prof. Swati Sharma (HOD, IT)",
+    "email": "it.faculty@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "DEPARTMENT_ADMIN",
+    "department": "IT",
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1544013951?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.059Z",
+    "updatedAt": "2026-09-11T12:15:26.059Z"
+  },
+  {
+    "_id": "user_dept_admin_robotics_01",
+    "name": "Dr. Arjun Mehta (HOD, Robotics)",
+    "email": "robotics.faculty@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "DEPARTMENT_ADMIN",
+    "department": "Robotics",
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1544015185?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.060Z",
+    "updatedAt": "2026-09-11T12:15:26.060Z"
+  },
+  {
+    "_id": "user_dept_admin_chemicalengineering_01",
+    "name": "Prof. K. R. Das (HOD, Chemical)",
+    "email": "chemical.faculty@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "DEPARTMENT_ADMIN",
+    "department": "Chemical Engineering",
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1544016419?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.061Z",
+    "updatedAt": "2026-09-11T12:15:26.061Z"
+  },
+  {
+    "_id": "user_dept_admin_cybersecurity_01",
+    "name": "Dr. Neha Gupta (HOD, Cyber Security)",
+    "email": "cyber.faculty@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "DEPARTMENT_ADMIN",
+    "department": "Cyber Security",
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1544017653?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.062Z",
+    "updatedAt": "2026-09-11T12:15:26.062Z"
+  },
+  {
+    "_id": "user_dept_admin_biotechnology_01",
+    "name": "Prof. Shalini Varma (HOD, Biotech)",
+    "email": "biotech.faculty@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "DEPARTMENT_ADMIN",
+    "department": "Bio Technology",
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1544018887?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.063Z",
+    "updatedAt": "2026-09-11T12:15:26.063Z"
+  },
+  {
+    "_id": "user_dept_admin_aerospace_01",
+    "name": "Dr. Vivek Agnihotri (HOD, Aerospace)",
+    "email": "aerospace.faculty@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "DEPARTMENT_ADMIN",
+    "department": "Aero Space",
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1544020121?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.065Z",
+    "updatedAt": "2026-09-11T12:15:26.065Z"
+  },
+  {
+    "_id": "user_dept_admin_agriculturalengineering_01",
+    "name": "Prof. Ramchandra Rao (HOD, Agri)",
+    "email": "agri.faculty@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "DEPARTMENT_ADMIN",
+    "department": "Agricultural Engineering",
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1544021355?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.067Z",
+    "updatedAt": "2026-09-11T12:15:26.067Z"
+  },
+  {
+    "_id": "user_dept_admin_miningengineering_01",
+    "name": "Dr. S. K. Bose (HOD, Mining)",
+    "email": "mining.faculty@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.uZbQ5PVbGhFFTR8ObUF9ZL24TjsQjry",
+    "role": "DEPARTMENT_ADMIN",
+    "department": "Mining Engineering",
+    "academicYear": null,
+    "profileImage": "https://images.unsplash.com/photo-1544022589?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.068Z",
+    "updatedAt": "2026-09-11T12:15:26.068Z"
+  },
+  {
+    "_id": "user_student_cse_4th_01",
+    "name": "Abhinav Sharma",
+    "email": "student1@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "CSE",
+    "academicYear": "4th Year",
+    "profileImage": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150",
+    "clubs": [
+      "Coding Club",
+      "Placement Cell"
+    ],
+    "createdAt": "2026-09-11T12:15:26.070Z",
+    "updatedAt": "2026-09-11T12:15:26.070Z"
+  },
+  {
+    "_id": "user_student_cse_3rd_01",
+    "name": "Bhavana Reddy",
+    "email": "student2@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "CSE",
+    "academicYear": "3rd Year",
+    "profileImage": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+    "clubs": [
+      "Coding Club",
+      "Cultural Society"
+    ],
+    "createdAt": "2026-09-11T12:15:26.071Z",
+    "updatedAt": "2026-09-11T12:15:26.071Z"
+  },
+  {
+    "_id": "user_student_ece_4th_01",
+    "name": "Chaitanya Kumar",
+    "email": "student3@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "ECE",
+    "academicYear": "4th Year",
+    "profileImage": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+    "clubs": [
+      "Sports Club",
+      "Placement Cell"
+    ],
+    "createdAt": "2026-09-11T12:15:26.071Z",
+    "updatedAt": "2026-09-11T12:15:26.071Z"
+  },
+  {
+    "_id": "user_student_eee_2nd_01",
+    "name": "Divya Patel",
+    "email": "student4@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "EEE",
+    "academicYear": "2nd Year",
+    "profileImage": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
+    "clubs": [
+      "Sports Club"
+    ],
+    "createdAt": "2026-09-11T12:15:26.073Z",
+    "updatedAt": "2026-09-11T12:15:26.073Z"
+  },
+  {
+    "_id": "user_student_civil_1st_01",
+    "name": "Eshwar Prasad",
+    "email": "student5@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "Civil",
+    "academicYear": "1st Year",
+    "profileImage": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
+    "clubs": [
+      "Cultural Society"
+    ],
+    "createdAt": "2026-09-11T12:15:26.074Z",
+    "updatedAt": "2026-09-11T12:15:26.074Z"
+  },
+  {
+    "_id": "user_student_csm_3rd_01",
+    "name": "Aditya Sen",
+    "email": "student.csm@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "CSM",
+    "academicYear": "3rd Year",
+    "profileImage": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150",
+    "clubs": [
+      "Coding Club"
+    ],
+    "createdAt": "2026-09-11T12:15:26.076Z",
+    "updatedAt": "2026-09-11T12:15:26.076Z"
+  },
+  {
+    "_id": "user_student_csd_4th_01",
+    "name": "Kavya Nair",
+    "email": "student.csd@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "CSD",
+    "academicYear": "4th Year",
+    "profileImage": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    "clubs": [
+      "Coding Club",
+      "Placement Cell"
+    ],
+    "createdAt": "2026-09-11T12:15:26.077Z",
+    "updatedAt": "2026-09-11T12:15:26.077Z"
+  },
+  {
+    "_id": "user_student_it_3rd_01",
+    "name": "Rahul Varma",
+    "email": "student.it@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "IT",
+    "academicYear": "3rd Year",
+    "profileImage": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
+    "clubs": [
+      "Coding Club"
+    ],
+    "createdAt": "2026-09-11T12:15:26.079Z",
+    "updatedAt": "2026-09-11T12:15:26.079Z"
+  },
+  {
+    "_id": "user_student_robotics_2nd_01",
+    "name": "Siddharth Roy",
+    "email": "student.robotics@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "Robotics",
+    "academicYear": "2nd Year",
+    "profileImage": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150",
+    "clubs": [
+      "Sports Club"
+    ],
+    "createdAt": "2026-09-11T12:15:26.079Z",
+    "updatedAt": "2026-09-11T12:15:26.079Z"
+  },
+  {
+    "_id": "user_student_chemical_3rd_01",
+    "name": "Ananya Goel",
+    "email": "student.chemical@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "Chemical Engineering",
+    "academicYear": "3rd Year",
+    "profileImage": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.080Z",
+    "updatedAt": "2026-09-11T12:15:26.080Z"
+  },
+  {
+    "_id": "user_student_cyber_4th_01",
+    "name": "Vikram Malhotra",
+    "email": "student.cyber@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "Cyber Security",
+    "academicYear": "4th Year",
+    "profileImage": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150",
+    "clubs": [
+      "Coding Club",
+      "Placement Cell"
+    ],
+    "createdAt": "2026-09-11T12:15:26.082Z",
+    "updatedAt": "2026-09-11T12:15:26.082Z"
+  },
+  {
+    "_id": "user_student_biotech_2nd_01",
+    "name": "Priyanka Das",
+    "email": "student.biotech@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "Bio Technology",
+    "academicYear": "2nd Year",
+    "profileImage": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150",
+    "clubs": [
+      "Cultural Society"
+    ],
+    "createdAt": "2026-09-11T12:15:26.083Z",
+    "updatedAt": "2026-09-11T12:15:26.083Z"
+  },
+  {
+    "_id": "user_student_aerospace_3rd_01",
+    "name": "Rohan Mehra",
+    "email": "student.aerospace@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "Aero Space",
+    "academicYear": "3rd Year",
+    "profileImage": "https://images.unsplash.com/photo-1489980508314-941910ded1f4?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.084Z",
+    "updatedAt": "2026-09-11T12:15:26.084Z"
+  },
+  {
+    "_id": "user_student_agri_1st_01",
+    "name": "Harish Rao",
+    "email": "student.agri@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "Agricultural Engineering",
+    "academicYear": "1st Year",
+    "profileImage": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.086Z",
+    "updatedAt": "2026-09-11T12:15:26.086Z"
+  },
+  {
+    "_id": "user_student_mining_4th_01",
+    "name": "Pranav Joshi",
+    "email": "student.mining@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "Mining Engineering",
+    "academicYear": "4th Year",
+    "profileImage": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150",
+    "clubs": [],
+    "createdAt": "2026-09-11T12:15:26.087Z",
+    "updatedAt": "2026-09-11T12:15:26.087Z"
+  },
+  {
+    "_id": "user_student_mech_3rd_01",
+    "name": "Varun Dhawan",
+    "email": "student.mech@college.edu",
+    "password": "$2a$10$/JdZtZMpfCVUYfWIWGj9D.vgUPIAcjRiDrQlNrLYQBSsCXZ0J11oC",
+    "role": "STUDENT",
+    "department": "Mech",
+    "academicYear": "3rd Year",
+    "profileImage": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+    "clubs": [
+      "Sports Club"
+    ],
+    "createdAt": "2026-09-11T12:15:26.088Z",
+    "updatedAt": "2026-09-11T12:15:26.088Z"
+  }
+]

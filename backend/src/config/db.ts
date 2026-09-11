@@ -19,7 +19,7 @@ export const connectDB = async () => {
     // Set a short timeout so it fails quickly if MongoDB isn't running
     mongoose.set('strictQuery', false);
     await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 3000,
+      serverSelectionTimeoutMS: 1000,
     });
     console.log('MongoDB Connected Successfully.');
     USE_MOCK_DB = false;
@@ -30,9 +30,11 @@ export const connectDB = async () => {
   }
 };
 
-// Generic Mock Model to mimic Mongoose CRUD
+// Generic Mock Model to mimic Mongoose CRUD with in-memory caching for peak performance
 export class MockModel<T extends { _id?: string; createdAt?: Date; updatedAt?: Date }> {
   private filePath: string;
+  private memoryCache: T[] | null = null;
+  private lastMtimeMs: number = 0;
 
   constructor(private collectionName: string) {
     this.filePath = path.join(DATA_DIR, `${collectionName}.json`);
@@ -44,19 +46,31 @@ export class MockModel<T extends { _id?: string; createdAt?: Date; updatedAt?: D
   private readData(): T[] {
     try {
       if (!fs.existsSync(this.filePath)) {
+        this.memoryCache = [];
+        this.lastMtimeMs = 0;
         return [];
       }
+      const stat = fs.statSync(this.filePath);
+      // If cached and file hasn't been modified externally, return memory cache in 0ms
+      if (this.memoryCache !== null && stat.mtimeMs === this.lastMtimeMs) {
+        return this.memoryCache;
+      }
       const data = fs.readFileSync(this.filePath, 'utf-8');
-      return JSON.parse(data) || [];
+      this.memoryCache = JSON.parse(data) || [];
+      this.lastMtimeMs = stat.mtimeMs;
+      return this.memoryCache || [];
     } catch (e) {
       console.error(`Error reading ${this.collectionName}:`, e);
-      return [];
+      return this.memoryCache || [];
     }
   }
 
   private writeData(data: T[]) {
     try {
+      this.memoryCache = data;
       fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2), 'utf-8');
+      const stat = fs.statSync(this.filePath);
+      this.lastMtimeMs = stat.mtimeMs;
     } catch (e) {
       console.error(`Error writing ${this.collectionName}:`, e);
     }
@@ -144,7 +158,7 @@ export class MockModel<T extends { _id?: string; createdAt?: Date; updatedAt?: D
     return results.length;
   }
 
-  // Helper to clear table (mainly for tests/seeding)
+  // Helper to clear table or delete matching items
   async deleteMany(filter?: Partial<T>): Promise<void> {
     if (!filter || Object.keys(filter).length === 0) {
       this.writeData([]);
@@ -152,10 +166,13 @@ export class MockModel<T extends { _id?: string; createdAt?: Date; updatedAt?: D
     }
     const list = this.readData();
     const filtered = list.filter((item: any) => {
-      for (const key in filter) {
-        if (item[key] === filter[key]) return false;
-      }
-      return true;
+      const matchesAll = Object.entries(filter).every(([key, val]) => {
+        if (key === 'email' && typeof item[key] === 'string' && typeof val === 'string') {
+          return item[key].toLowerCase().trim() === val.toLowerCase().trim();
+        }
+        return item[key] === val;
+      });
+      return !matchesAll;
     });
     this.writeData(filtered);
   }

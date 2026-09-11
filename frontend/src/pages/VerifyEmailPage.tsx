@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { GraduationCap, CheckCircle2, AlertCircle, ArrowRight, Loader2, RefreshCw, Mail, ExternalLink } from 'lucide-react';
-import { API_URL } from '../context/AuthContext';
+import { API_URL } from '../config/api';
 
 const VerifyEmailPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -35,7 +35,7 @@ const VerifyEmailPage: React.FC = () => {
         } else {
           setErrorMsg(data.message || 'Activation link is invalid or has expired.');
         }
-      } catch (err: any) {
+      } catch {
         setErrorMsg('Could not connect to server to verify account.');
       } finally {
         setLoading(false);
@@ -73,7 +73,7 @@ const VerifyEmailPage: React.FC = () => {
       } else {
         setErrorMsg(data.message || 'Failed to resend activation link.');
       }
-    } catch (e) {
+    } catch {
       setErrorMsg('Network error resending activation link.');
     } finally {
       setResending(false);
@@ -81,8 +81,8 @@ const VerifyEmailPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-slate-200 text-center space-y-6">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="max-w-md w-full bg-white p-5 sm:p-8 rounded-2xl shadow-xl border border-slate-200 text-center space-y-6">
         
         {/* Branding */}
         <div className="flex flex-col items-center">

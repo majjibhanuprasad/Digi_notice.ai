@@ -7,30 +7,53 @@ import { connectMySQL } from './config/mysqlDb';
 import apiRouter from './routes/api';
 import { User, Notice, IDepartment, ICategory, INotice, IUser } from './models/Schemas';
 
+import { 
+  helmetSecurity, 
+  corsFirewall, 
+  payloadSanitizer, 
+  generalApiLimiter 
+} from './middleware/securityFirewall';
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
-app.use(express.json());
+// Security Firewall Middlewares
+app.use(helmetSecurity);
+app.use(corsFirewall);
+app.use(express.json({ 
+  limit: '2mb',
+  verify: (req, _res, buf) => {
+    const raw = buf.toString();
+    if (raw.includes('"__proto__"') || raw.includes('"constructor"') || raw.includes('"prototype"') || raw.includes('\0')) {
+      throw new Error('Firewall Block: Malformed or suspicious payload detected.');
+    }
+  }
+}));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+app.use(payloadSanitizer);
+
+// General API Rate Limiting Firewall
+app.use('/api', generalApiLimiter);
 
 // Main API Router
 app.use('/api', apiRouter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date() });
+  res.json({ status: 'ok', firewall: 'active', timestamp: new Date() });
 });
 
 // Seeding helper function
 const seedData = async () => {
   try {
-    // Skipping automatic demo seeding to maintain a clean database for real users
-    return;
-
-    // 1. Seed Users (passwords hashed)
-    const salt = await bcrypt.genSalt(10);
+    const shouldSeedUsers = process.env.AUTO_SEED === 'true';
+    const adminUser = await User.findOne({ role: 'SUPER_ADMIN' });
+    if (shouldSeedUsers && !adminUser) {
+      console.log('Seeding default campus user accounts (Super Admin, HODs, Students)...');
+      // 1. Seed Users (passwords hashed)
+      const salt = await bcrypt.genSalt(10);
     const superAdminPassword = await bcrypt.hash('admin123', salt);
     const studentPassword = await bcrypt.hash('password123', salt);
 
@@ -271,10 +294,14 @@ const seedData = async () => {
       clubs: ['Sports Club']
     });
 
-    console.log('Demo user accounts seeded.');
+      console.log('Demo user accounts seeded.');
+    }
 
-    // 2. Seed Notices (at least 10 notices with various categories, priorities)
-    const now = new Date();
+    const noticeCount = await Notice.countDocuments();
+    if (noticeCount === 0) {
+      console.log('Seeding default notice board announcements...');
+      // 2. Seed Notices (at least 10 notices with various categories, priorities)
+      const now = new Date();
     const futureDate = (days: number) => new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
     const pastDate = (days: number) => new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
@@ -486,16 +513,32 @@ const seedData = async () => {
       }
     ];
 
-    for (const notice of notices) {
-      await Notice.create(notice);
-    }
+      for (const notice of notices) {
+        await Notice.create(notice);
+      }
 
-    console.log('10 Notice announcements seeded successfully.');
+      console.log('10 Notice announcements seeded successfully.');
+    }
 
   } catch (e) {
     console.error('Error during data seeding:', e);
   }
 };
+
+// Firewall & Application Error Handling Middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err && err.message && err.message.includes('CORS Firewall Block')) {
+    return res.status(403).json({ error: 'CORS Block', message: err.message });
+  }
+  if (err && err.message && err.message.includes('Firewall Block')) {
+    return res.status(400).json({ error: 'Firewall Block', message: err.message });
+  }
+  if (err && err.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Payload Too Large', message: 'Request body exceeds 2MB limit.' });
+  }
+  console.error('Unhandled Server Error:', err);
+  res.status(500).json({ error: 'Internal Server Error', message: err.message || 'An unexpected error occurred.' });
+});
 
 // Connect to DB and start
 const startServer = async () => {

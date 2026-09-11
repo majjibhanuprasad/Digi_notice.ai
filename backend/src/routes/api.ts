@@ -9,7 +9,10 @@ import {
   resendOtp,
   getProfile, 
   googleLoginPlaceholder, 
-  microsoftLoginPlaceholder 
+  microsoftLoginPlaceholder,
+  forgotPassword,
+  verifyResetCode,
+  resetPassword
 } from '../controllers/authController';
 import {
   getStudentNotices,
@@ -74,13 +77,18 @@ export const requireRoles = (roles: ('SUPER_ADMIN' | 'DEPARTMENT_ADMIN' | 'STUDE
   };
 };
 
-// --- AUTHENTICATION ROUTES ---
-router.post('/auth/login', login);
-router.post('/auth/register', register);
+import { authLimiter, aiLimiter } from '../middleware/securityFirewall';
+
+// --- AUTHENTICATION ROUTES (Protected with Auth Rate Limiter Firewall) ---
+router.post('/auth/login', authLimiter, login);
+router.post('/auth/register', authLimiter, register);
 router.get('/auth/verify-email', verifyEmail);
-router.post('/auth/verify-otp', verifyOtp);
-router.post('/auth/resend-verification', resendVerification);
-router.post('/auth/resend-otp', resendOtp);
+router.post('/auth/verify-otp', authLimiter, verifyOtp);
+router.post('/auth/resend-verification', authLimiter, resendVerification);
+router.post('/auth/resend-otp', authLimiter, resendOtp);
+router.post('/auth/forgot-password', authLimiter, forgotPassword);
+router.post('/auth/verify-reset-code', authLimiter, verifyResetCode);
+router.post('/auth/reset-password', authLimiter, resetPassword);
 router.get('/auth/profile', authMiddleware, getProfile);
 router.post('/auth/google', googleLoginPlaceholder);
 router.post('/auth/microsoft', microsoftLoginPlaceholder);
@@ -108,13 +116,13 @@ router.post('/notices/:noticeId/query', authMiddleware, requireRoles(['STUDENT']
 router.get('/queries', authMiddleware, requireRoles(['SUPER_ADMIN', 'DEPARTMENT_ADMIN']), getQueriesForAdmin);
 router.post('/queries/:queryId/answer', authMiddleware, requireRoles(['SUPER_ADMIN', 'DEPARTMENT_ADMIN']), postAnswer);
 
-// --- AI SERVICE ROUTES ---
-router.post('/ai/generate-notice', handleGenerateNotice);
-router.post('/ai/target', handleRecommendTarget);
-router.post('/ai/content-check', handleContentCheck);
-router.post('/ai/summarize', handleGenerateSummary);
-router.post('/ai/translate', handleTranslateNotice);
-router.post('/ai/ask', handleAskNoticeAI);
+// --- AI SERVICE ROUTES (Protected with AI Rate Limiter & Role Firewalls) ---
+router.post('/ai/generate-notice', aiLimiter, authMiddleware, requireRoles(['SUPER_ADMIN', 'DEPARTMENT_ADMIN']), handleGenerateNotice);
+router.post('/ai/target', aiLimiter, authMiddleware, requireRoles(['SUPER_ADMIN', 'DEPARTMENT_ADMIN']), handleRecommendTarget);
+router.post('/ai/content-check', aiLimiter, authMiddleware, requireRoles(['SUPER_ADMIN', 'DEPARTMENT_ADMIN']), handleContentCheck);
+router.post('/ai/summarize', aiLimiter, authMiddleware, handleGenerateSummary);
+router.post('/ai/translate', aiLimiter, authMiddleware, handleTranslateNotice);
+router.post('/ai/ask', aiLimiter, authMiddleware, handleAskNoticeAI);
 
 // --- ANALYTICS & LOGGING ROUTES ---
 router.get('/analytics', authMiddleware, requireRoles(['SUPER_ADMIN', 'DEPARTMENT_ADMIN']), getAnalytics);

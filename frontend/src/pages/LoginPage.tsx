@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { GraduationCap, ArrowRight, Lock, Mail, Loader2, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '../context/useAuth';
+import { GraduationCap, ArrowRight, Lock, Mail, Loader2, Eye, EyeOff, CheckCircle2, KeyRound } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const { login } = useAuth();
@@ -20,10 +20,17 @@ const LoginPage: React.FC = () => {
   const paramEmail = searchParams.get('email');
 
   useEffect(() => {
+    const roleParam = searchParams.get('role');
     if (paramEmail) {
       setEmail(paramEmail);
+    } else if (roleParam === 'admin' || roleParam === 'superadmin') {
+      setEmail('superadmin@college.edu');
+      setPassword('admin123');
+    } else if (roleParam === 'student') {
+      setEmail('student1@college.edu');
+      setPassword('password123');
     }
-  }, [paramEmail]);
+  }, [paramEmail, searchParams]);
 
   const handleResendLink = async () => {
     const targetEmail = unverifiedEmail || email;
@@ -42,7 +49,7 @@ const LoginPage: React.FC = () => {
       } else {
         setResendStatus(`⚠️ ${data.message || 'Failed to resend activation link.'}`);
       }
-    } catch (e) {
+    } catch {
       setResendStatus('⚠️ Network error resending link.');
     }
   };
@@ -80,8 +87,8 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-6 lg:px-8 font-sans">
-      <div className="max-w-md w-full space-y-6 bg-white p-8 rounded-2xl shadow-xl border border-slate-200">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="max-w-md w-full space-y-6 bg-white p-5 sm:p-8 rounded-2xl shadow-xl border border-slate-200">
         
         {/* Branding header */}
         <div className="flex flex-col items-center text-center">
@@ -102,7 +109,7 @@ const LoginPage: React.FC = () => {
             Sign In
           </div>
           <Link
-            to="/register"
+            to={searchParams.get('role') ? `/register?role=${encodeURIComponent(searchParams.get('role')!)}` : '/register'}
             className="py-2.5 text-center text-slate-600 hover:text-slate-900 rounded-lg transition flex items-center justify-center"
           >
             Sign Up
@@ -186,9 +193,14 @@ const LoginPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-xs font-semibold text-indigo-600 hover:text-indigo-800">
-            <span className="cursor-pointer" onClick={() => alert('Please contact your campus administrator or IT Helpdesk for password resets.')}>Forgot Password?</span>
-            <span className="text-slate-400 font-normal">Contact IT Helpdesk</span>
+          <div className="flex items-center justify-between text-xs pt-1">
+            <span className="text-slate-400 font-normal">Trouble signing in?</span>
+            <Link
+              to={email ? `/forgot-password?email=${encodeURIComponent(email)}` : '/forgot-password'}
+              className="font-bold text-indigo-600 hover:text-indigo-800 transition flex items-center gap-1.5 hover:underline"
+            >
+              <KeyRound className="w-3.5 h-3.5" /> Forgot Password?
+            </Link>
           </div>
 
           <button
@@ -208,7 +220,16 @@ const LoginPage: React.FC = () => {
           </button>
         </form>
 
-        <div className="text-center pt-2">
+        <div className="text-center pt-2 border-t border-slate-100 space-y-1.5">
+          <p className="text-xs text-slate-500">
+            Forgot your password?{' '}
+            <Link 
+              to={email ? `/forgot-password?email=${encodeURIComponent(email)}` : '/forgot-password'}
+              className="font-bold text-indigo-600 hover:text-indigo-800"
+            >
+              Reset with Email Code
+            </Link>
+          </p>
           <p className="text-xs text-slate-500">
             Don't have an account?{' '}
             <Link to="/register" className="font-bold text-indigo-600 hover:text-indigo-800">
@@ -217,7 +238,39 @@ const LoginPage: React.FC = () => {
           </p>
         </div>
 
-        {/* SSO login placeholders */}
+        {/* Quick Demo Access Buttons */}
+        <div className="pt-3 border-t border-slate-100">
+          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
+            <span>⚡ Quick Demo Credentials</span>
+            <span className="text-[10px] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full font-bold">1-Click Fill</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => { setEmail('superadmin@college.edu'); setPassword('admin123'); setError(''); }}
+              className="p-2 border border-purple-200 bg-purple-50/60 hover:bg-purple-100/70 rounded-xl text-left transition"
+            >
+              <span className="block text-[11px] font-extrabold text-purple-950">Super Admin</span>
+              <span className="block text-[9px] text-purple-700 font-semibold truncate">Dr. Alok Verma</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEmail('cse.faculty@college.edu'); setPassword('admin123'); setError(''); }}
+              className="p-2 border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100/70 rounded-xl text-left transition"
+            >
+              <span className="block text-[11px] font-extrabold text-indigo-950">CSE HOD</span>
+              <span className="block text-[9px] text-indigo-700 font-semibold truncate">Prof. Ramesh</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEmail('student1@college.edu'); setPassword('password123'); setError(''); }}
+              className="p-2 border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100/70 rounded-xl text-left transition"
+            >
+              <span className="block text-[11px] font-extrabold text-emerald-950">Student</span>
+              <span className="block text-[9px] text-emerald-700 font-semibold truncate">Abhinav Sharma</span>
+            </button>
+          </div>
+        </div>
         <div className="relative flex items-center justify-center my-4">
           <div className="border-t border-slate-200 w-full" />
           <span className="absolute bg-white px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">

@@ -5,4 +5,24 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  build: {
+    target: 'esnext',
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-icons': ['lucide-react']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 600
+  },
+  server: {
+    host: true,
+    port: 5173,
+    warmup: {
+      clientFiles: ['./src/App.tsx', './src/pages/LandingPage.tsx', './src/pages/StudentDashboard.tsx']
+    }
+  }
 })

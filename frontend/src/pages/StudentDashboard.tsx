@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { 
   GraduationCap, 
   Search, 
@@ -10,7 +10,6 @@ import {
   CheckCircle, 
   ExternalLink, 
   Calendar, 
-  MessageSquare, 
   Globe, 
   ChevronRight, 
   X, 
@@ -19,7 +18,8 @@ import {
   FileText,
   AlertOctagon,
   Sparkles,
-  Info
+  Info,
+  Menu
 } from 'lucide-react';
 
 interface NoticeItem {
@@ -74,6 +74,10 @@ const StudentDashboard: React.FC = () => {
   const [notifications, setNotifications] = useState<string[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
 
+  // Mobile navigation & search toggles
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
   // Selected Notice for detail drawer
   const [selectedNotice, setSelectedNotice] = useState<NoticeItem | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -94,13 +98,34 @@ const StudentDashboard: React.FC = () => {
 
   const categories = ['All', 'Exams', 'Placements', 'Workshops', 'Sports', 'Cultural', 'General', 'Emergency'];
 
+  const fetchNotices = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await apiFetch('/notices');
+      if (res.ok) {
+        const data = await res.json();
+        setNotices(data);
+        
+        // Populate critical alerts into notification tray
+        const criticalAlerts = data
+          .filter((n: NoticeItem) => n.priority === 'CRITICAL')
+          .map((n: NoticeItem) => n.title);
+        setNotifications(criticalAlerts);
+      }
+    } catch (e) {
+      console.error('Error loading notices:', e);
+    } finally {
+      setLoading(false);
+    }
+  }, [apiFetch]);
+
   useEffect(() => {
     if (!user) {
       navigate('/login');
       return;
     }
     fetchNotices();
-  }, [user]);
+  }, [user, navigate, fetchNotices]);
 
   // Apply filters whenever filters or notices list changes
   useEffect(() => {
@@ -126,27 +151,6 @@ const StudentDashboard: React.FC = () => {
 
     setFilteredNotices(result);
   }, [notices, activeCategoryFilter, sidebarFilter]);
-
-  const fetchNotices = async () => {
-    setLoading(true);
-    try {
-      const res = await apiFetch('/notices');
-      if (res.ok) {
-        const data = await res.json();
-        setNotices(data);
-        
-        // Populate critical alerts into notification tray
-        const criticalAlerts = data
-          .filter((n: NoticeItem) => n.priority === 'CRITICAL')
-          .map((n: NoticeItem) => n.title);
-        setNotifications(criticalAlerts);
-      }
-    } catch (e) {
-      console.error('Error loading notices:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -360,37 +364,55 @@ const StudentDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-slate-200/80 px-6 py-4 flex items-center justify-between">
+      {/* Responsive Header */}
+      <header className="sticky top-0 z-40 bg-white border-b border-slate-200/80 px-3.5 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-indigo-600 rounded-lg text-white">
+          {/* Mobile menu hamburger button */}
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className="md:hidden p-2 -ml-1 text-slate-600 hover:bg-slate-100 rounded-xl transition"
+            aria-label="Open Navigation Menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          <div className="p-1.5 bg-indigo-600 rounded-xl text-white shadow-xs">
             <GraduationCap className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-lg font-bold text-slate-900 tracking-tight">DigiNotice</span>
-            <span className="ml-1 text-xs font-semibold px-1.5 py-0.2 bg-indigo-50 text-indigo-700 rounded-full">AI</span>
+            <span className="text-base sm:text-lg font-black text-slate-900 tracking-tight">DigiNotice</span>
+            <span className="ml-1 text-[10px] sm:text-xs font-extrabold px-1.5 py-0.2 bg-indigo-50 text-indigo-700 rounded-full">AI</span>
           </div>
         </div>
 
-        {/* Global Search form */}
-        <form onSubmit={handleSearchSubmit} className="hidden md:flex items-center relative w-96">
+        {/* Global Search form (Desktop/Tablet) */}
+        <form onSubmit={handleSearchSubmit} className="hidden md:flex items-center relative w-72 lg:w-96">
           <Search className="w-4 h-4 text-slate-400 absolute left-3" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search notices naturally (e.g. 'CSE midterms')"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-4 text-sm font-medium focus:bg-white focus:outline-none focus:border-indigo-500 transition"
+            placeholder="Search notices naturally (e.g. 'midterms')"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-4 text-xs sm:text-sm font-medium focus:bg-white focus:outline-none focus:border-indigo-500 transition"
           />
         </form>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
+          {/* Mobile search toggle button */}
+          <button
+            onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+            className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition"
+            aria-label="Toggle Search"
+          >
+            <Search className="w-5 h-5" />
+          </button>
           
           {/* Notifications Panel */}
           <div className="relative">
             <button 
               onClick={() => setShowNotifications(!showNotifications)}
               className="p-2 hover:bg-slate-100 rounded-xl relative transition"
+              aria-label="Notifications"
             >
               <Bell className="w-5 h-5 text-slate-600" />
               {notifications.length > 0 && (
@@ -398,7 +420,7 @@ const StudentDashboard: React.FC = () => {
               )}
             </button>
             {showNotifications && (
-              <div className="absolute right-0 mt-3 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 z-50">
+              <div className="absolute right-0 mt-3 w-72 sm:w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 z-50">
                 <h4 className="font-bold text-sm text-slate-900 mb-2.5 flex items-center justify-between">
                   <span>Urgent Notifications</span>
                   <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full">{notifications.length} Active</span>
@@ -420,11 +442,11 @@ const StudentDashboard: React.FC = () => {
           </div>
 
           {/* User profile details */}
-          <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
+          <div className="flex items-center gap-2 sm:gap-3 border-l border-slate-200 pl-2 sm:pl-4">
             <img 
               src={user?.profileImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'} 
               alt="Avatar" 
-              className="w-9 h-9 rounded-full object-cover ring-2 ring-indigo-50"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover ring-2 ring-indigo-50"
             />
             <div className="hidden lg:block text-left">
               <div className="text-sm font-bold text-slate-900 leading-none">{user?.name}</div>
@@ -434,18 +456,137 @@ const StudentDashboard: React.FC = () => {
             </div>
             <button 
               onClick={logout}
-              className="p-2 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-xl transition"
+              className="p-1.5 sm:p-2 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-xl transition"
               title="Logout"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         </div>
       </header>
 
+      {/* Expandable Mobile Search Bar */}
+      {mobileSearchOpen && (
+        <div className="md:hidden bg-white border-b border-slate-200 px-4 py-2.5 animate-in fade-in slide-in-from-top-2 duration-150">
+          <form onSubmit={handleSearchSubmit} className="relative w-full">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+            <input
+              type="text"
+              autoFocus
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search notices naturally..."
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-8 text-xs font-medium focus:bg-white focus:outline-none focus:border-indigo-500"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => { setSearchQuery(''); fetchNotices(); }}
+                className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </form>
+        </div>
+      )}
+
+      {/* Mobile Off-Canvas Slide-over Navigation Drawer */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+
+          {/* Drawer Content */}
+          <div className="relative w-72 max-w-[85vw] bg-white h-full shadow-2xl flex flex-col justify-between p-4 z-10 animate-in slide-in-from-left duration-200">
+            <div>
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-indigo-600 rounded-lg text-white">
+                    <GraduationCap className="w-5 h-5" />
+                  </div>
+                  <span className="font-extrabold text-slate-900 text-base">Menu</span>
+                </div>
+                <button 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* User Identity Mini Card */}
+              <div className="p-3 my-3 bg-slate-50 rounded-xl flex items-center gap-3">
+                <img 
+                  src={user?.profileImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'} 
+                  alt="Avatar" 
+                  className="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-100"
+                />
+                <div className="overflow-hidden">
+                  <div className="text-xs font-bold text-slate-900 truncate">{user?.name}</div>
+                  <div className="text-[10px] text-indigo-600 font-semibold uppercase">{user?.department} &bull; {user?.academicYear}</div>
+                </div>
+              </div>
+
+              {/* Navigation Items */}
+              <div className="space-y-1 mt-2">
+                <button
+                  onClick={() => { setSidebarFilter('dashboard'); setActiveCategoryFilter('All'); setMobileMenuOpen(false); }}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-between ${sidebarFilter === 'dashboard' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <span>All Notices Feed</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => { setSidebarFilter('saved'); setMobileMenuOpen(false); }}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-between ${sidebarFilter === 'saved' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <span>Saved Bookmarks</span>
+                  <Bookmark className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => { setSidebarFilter('critical'); setMobileMenuOpen(false); }}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-between ${sidebarFilter === 'critical' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <span>Critical Safety Alerts</span>
+                  <AlertOctagon className="w-4 h-4 text-red-500" />
+                </button>
+              </div>
+
+              {/* Academic Categories */}
+              <div className="border-t border-slate-100 my-4" />
+              <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2 px-1">Categories</div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {categories.map((cat, i) => (
+                  <button
+                    key={i}
+                    onClick={() => { setActiveCategoryFilter(cat); setSidebarFilter('dashboard'); setMobileMenuOpen(false); }}
+                    className={`text-left px-3 py-2 rounded-lg text-xs font-semibold transition truncate ${activeCategoryFilter === cat ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Drawer Logout */}
+            <button
+              onClick={logout}
+              className="w-full py-2.5 px-4 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-700 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2"
+            >
+              <LogOut className="w-4 h-4" /> Sign Out
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 flex overflow-hidden">
         
-        {/* Sidebar */}
+        {/* Desktop Sidebar */}
         <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col p-4 shrink-0">
           <div className="space-y-1">
             <button
@@ -505,7 +646,7 @@ const StudentDashboard: React.FC = () => {
             <div className="flex flex-wrap gap-1.5 mt-2.5">
               <span className="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">{user?.department}</span>
               <span className="text-[10px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">{user?.academicYear}</span>
-              {user?.clubs?.map((club, idx) => (
+              {user?.clubs?.map((club: string, idx: number) => (
                 <span key={idx} className="text-[10px] font-bold bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full truncate max-w-full">{club}</span>
               ))}
             </div>
@@ -513,26 +654,26 @@ const StudentDashboard: React.FC = () => {
         </aside>
 
         {/* Notice Board Feed Container */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-3.5 sm:p-6">
           
           {/* Welcome section */}
-          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="bg-white border border-slate-200 p-4 sm:p-6 rounded-2xl shadow-sm mb-4 sm:mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-black text-slate-950 tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight">
                 Welcome back, {user?.name}! ✨
               </h2>
-              <p className="text-slate-500 text-sm mt-1">
+              <p className="text-slate-500 text-xs sm:text-sm mt-1">
                 Displaying official announcements for {user?.department} &bull; {user?.academicYear}
               </p>
             </div>
             
-            {/* Horizontal Categories filter pills */}
-            <div className="flex flex-wrap items-center gap-1.5">
+            {/* Horizontal Categories filter pills (Swipeable on Mobile) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 w-full md:w-auto -mx-2 px-2 sm:mx-0 sm:px-0">
               {categories.map((cat, i) => (
                 <button
                   key={i}
                   onClick={() => { setActiveCategoryFilter(cat); setSidebarFilter('dashboard'); }}
-                  className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition ${activeCategoryFilter === cat ? 'bg-slate-900 text-white border-slate-900' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800'}`}
+                  className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition shrink-0 ${activeCategoryFilter === cat ? 'bg-slate-900 text-white border-slate-900' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800'}`}
                 >
                   {cat}
                 </button>
@@ -718,25 +859,25 @@ const StudentDashboard: React.FC = () => {
           <div className="w-full max-w-3xl bg-white h-full flex flex-col justify-between shadow-2xl relative animate-slide-in">
             
             {/* Drawer Header */}
-            <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+            <div className="p-4 sm:p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50 shrink-0">
               <div>
                 <span className="text-[10px] font-bold bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                   {selectedNotice.category} Notice
                 </span>
-                <h3 className="font-extrabold text-lg text-slate-900 leading-snug mt-1.5 pr-8">
+                <h3 className="font-extrabold text-base sm:text-lg text-slate-900 leading-snug mt-1.5 pr-4 sm:pr-8">
                   {selectedNotice.title}
                 </h3>
               </div>
               <button 
                 onClick={() => setSelectedNotice(null)}
-                className="p-2 hover:bg-slate-200 text-slate-500 hover:text-slate-900 rounded-xl transition"
+                className="p-2 hover:bg-slate-200 text-slate-500 hover:text-slate-900 rounded-xl transition shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Drawer Scrollable Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
               
               {/* Toolbar: Toggle Summary, Translate Language */}
               <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs font-bold text-slate-600">
@@ -884,7 +1025,11 @@ const StudentDashboard: React.FC = () => {
                 </form>
 
                 <div className="space-y-4">
-                  {publicQueries.length === 0 ? (
+                  {detailLoading ? (
+                    <div className="flex items-center justify-center py-6 text-slate-400 gap-2 text-xs">
+                      <Loader2 className="w-4 h-4 animate-spin text-indigo-500" /> Loading discussions...
+                    </div>
+                  ) : publicQueries.length === 0 ? (
                     <div className="text-slate-400 text-xs text-center py-6">No public questions posted yet. Be the first to ask!</div>
                   ) : (
                     publicQueries.map((query) => (
@@ -893,7 +1038,7 @@ const StudentDashboard: React.FC = () => {
                           <span className="font-bold text-slate-800">{query.studentName}</span>
                           <span className="text-[10px] text-slate-400 font-semibold">{new Date(query.timestamp).toLocaleDateString()}</span>
                         </div>
-                        <p className="text-slate-650 font-medium">Q: {query.question}</p>
+                        <p className="text-slate-600 font-medium">Q: {query.question}</p>
                         
                         {query.answer ? (
                           <div className="bg-emerald-50/50 border border-emerald-100 p-2.5 rounded-xl text-emerald-900 mt-2">
@@ -928,7 +1073,7 @@ const StudentDashboard: React.FC = () => {
                 {aiChatHistory.map((chat, idx) => (
                   <div 
                     key={idx} 
-                    className={`p-2.5 rounded-xl text-xs max-w-[85%] leading-relaxed ${chat.sender === 'user' ? 'bg-indigo-650 text-white ml-auto' : 'bg-slate-800 text-slate-100 mr-auto'}`}
+                    className={`p-2.5 rounded-xl text-xs max-w-[85%] leading-relaxed ${chat.sender === 'user' ? 'bg-indigo-600 text-white ml-auto' : 'bg-slate-800 text-slate-100 mr-auto'}`}
                   >
                     {chat.text}
                   </div>
@@ -944,19 +1089,19 @@ const StudentDashboard: React.FC = () => {
               <div className="flex flex-wrap gap-1.5 mb-3">
                 <button
                   onClick={() => handleAskAIChat('Who is eligible?')}
-                  className="text-[10px] font-bold bg-slate-900 hover:bg-slate-850 text-slate-350 py-1 px-2.5 border border-slate-800 rounded-lg transition"
+                  className="text-[10px] font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 py-1 px-2.5 border border-slate-800 rounded-lg transition"
                 >
                   Who is eligible?
                 </button>
                 <button
                   onClick={() => handleAskAIChat('What is the deadline?')}
-                  className="text-[10px] font-bold bg-slate-900 hover:bg-slate-850 text-slate-350 py-1 px-2.5 border border-slate-800 rounded-lg transition"
+                  className="text-[10px] font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 py-1 px-2.5 border border-slate-800 rounded-lg transition"
                 >
                   What is the deadline?
                 </button>
                 <button
                   onClick={() => handleAskAIChat('Where is the event?')}
-                  className="text-[10px] font-bold bg-slate-900 hover:bg-slate-850 text-slate-350 py-1 px-2.5 border border-slate-800 rounded-lg transition"
+                  className="text-[10px] font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 py-1 px-2.5 border border-slate-800 rounded-lg transition"
                 >
                   Where is the event?
                 </button>

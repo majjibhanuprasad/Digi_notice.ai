@@ -163,7 +163,7 @@ export const connectMySQL = async (): Promise<boolean> => {
       port: MYSQL_PORT,
       user: MYSQL_USER,
       password: MYSQL_PASSWORD,
-      connectTimeout: 3000
+      connectTimeout: 1000
     });
 
     await setupConn.query(`CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;`);

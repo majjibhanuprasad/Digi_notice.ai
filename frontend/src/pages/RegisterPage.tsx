@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { 
   GraduationCap, 
   ArrowRight, 
@@ -16,8 +15,7 @@ import {
   UserCheck,
   Award,
   CheckCircle2,
-  Send,
-  ExternalLink
+  Send
 } from 'lucide-react';
 
 const DEPARTMENTS = [
@@ -41,9 +39,7 @@ const DEPARTMENTS = [
 const ACADEMIC_YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 
 const RegisterPage: React.FC = () => {
-  const { register } = useAuth();
-  const navigate = useNavigate();
-
+  const [searchParams] = useSearchParams();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -52,6 +48,17 @@ const RegisterPage: React.FC = () => {
   const [department, setDepartment] = useState('CSE');
   const [academicYear, setAcademicYear] = useState('3rd Year');
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const roleParam = searchParams.get('role')?.toLowerCase();
+    if (roleParam === 'faculty' || roleParam === 'admin' || roleParam === 'hod' || roleParam === 'department_admin') {
+      setRole('DEPARTMENT_ADMIN');
+    } else if (roleParam === 'superadmin' || roleParam === 'super_admin') {
+      setRole('SUPER_ADMIN');
+    } else if (roleParam === 'student') {
+      setRole('STUDENT');
+    }
+  }, [searchParams]);
 
   const [error, setError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
@@ -142,14 +149,14 @@ const RegisterPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-lg w-full bg-white p-8 rounded-2xl shadow-xl border border-slate-200 space-y-6">
+      <div className="max-w-lg w-full bg-white p-5 sm:p-8 rounded-2xl shadow-xl border border-slate-200 space-y-5 sm:space-y-6">
         
         {/* Header Branding */}
         <div className="flex flex-col items-center text-center">
-          <div className="p-3 bg-indigo-600 rounded-2xl text-white shadow-md shadow-indigo-200 mb-3">
-            <GraduationCap className="w-8 h-8" />
+          <div className="p-2.5 sm:p-3 bg-indigo-600 rounded-2xl text-white shadow-md shadow-indigo-200 mb-3">
+            <GraduationCap className="w-7 h-7 sm:w-8 sm:h-8" />
           </div>
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             DigiNotice <span className="text-indigo-600">AI</span>
           </h2>
           <p className="text-xs text-slate-500 mt-1">
@@ -223,15 +230,15 @@ const RegisterPage: React.FC = () => {
                 className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition disabled:opacity-50"
               >
                 <Send className="w-3.5 h-3.5" />
-                {resendLoading ? 'Sending fresh link...' : "Didn't receive email? Resend Activation Link"}
+                <span>{resendLoading ? 'Resending Link...' : 'Resend Activation Link'}</span>
               </button>
 
-              <div className="pt-2 border-t border-slate-100">
+              <div className="text-center pt-2">
                 <Link
-                  to={`/login?email=${encodeURIComponent(email)}`}
-                  className="text-xs font-bold text-slate-600 hover:text-indigo-600 transition"
+                  to="/login"
+                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline"
                 >
-                  Return to Sign In Page
+                  Already verified? Proceed to Sign In &rarr;
                 </Link>
               </div>
             </div>
@@ -242,7 +249,7 @@ const RegisterPage: React.FC = () => {
             {/* Tab Switcher: Sign In vs Sign Up */}
             <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-xl text-xs font-bold">
               <Link
-                to="/login"
+                to={role === 'DEPARTMENT_ADMIN' || role === 'SUPER_ADMIN' ? '/login?role=admin' : '/login?role=student'}
                 className="py-2.5 text-center text-slate-600 hover:text-slate-900 rounded-lg transition flex items-center justify-center"
               >
                 Sign In
@@ -266,7 +273,7 @@ const RegisterPage: React.FC = () => {
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                   Select Account Type
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setRole('STUDENT')}
