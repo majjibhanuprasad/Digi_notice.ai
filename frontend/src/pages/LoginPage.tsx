@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/useAuth';
+import { API_URL } from '../config/api';
 import { GraduationCap, ArrowRight, Lock, Mail, Loader2, Eye, EyeOff, CheckCircle2, KeyRound } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
@@ -38,7 +39,7 @@ const LoginPage: React.FC = () => {
 
     setResendStatus('Sending fresh activation link...');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/resend-verification`, {
+      const res = await fetch(`${API_URL}/auth/resend-verification`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: targetEmail })

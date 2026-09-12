@@ -1,32 +1,67 @@
-# React + TypeScript + Vite
+# DigiNotice AI - Frontend Web Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A modern, responsive Digital Notice Board frontend built with **React 18**, **Vite**, **TypeScript**, and **TailwindCSS**.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Features
+- **Role-Based Dashboards**: Super Admin, Department HOD, Faculty, and Students.
+- **Interactive Digital Display / Kiosk Mode**: Real-time auto-scrolling notice ticker, weather widgets, and campus news.
+- **Authentication**: JWT authentication with email OTP verification and self-serve password recovery.
+- **Modern UI**: Glassmorphism, dark/light themes, animations with Lucide icons.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Local Development
 
-## Expanding the Oxlint configuration
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+2. **Configure Environment Variables**:
+   Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+   Set `VITE_API_URL`:
+   ```env
+   VITE_API_URL=http://localhost:5000/api
+   ```
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+3. **Start Development Server**:
+   ```bash
+   npm run dev
+   ```
+   Open `http://localhost:5173` in your browser.
+
+4. **Build for Production**:
+   ```bash
+   npm run build
+   ```
+
+---
+
+## 🌐 Deploy to Vercel (Step-by-Step)
+
+### Option 1: Vercel Dashboard (Recommended)
+1. Push this repository to GitHub.
+2. Go to [Vercel Dashboard](https://vercel.com/new).
+3. Click **"Add New..."** -> **"Project"** and select your GitHub frontend repository (`diginotice-frontend`).
+4. In the Project Configuration:
+   - **Framework Preset**: `Vite`
+   - **Root Directory**: `./`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+5. Under **Environment Variables**, add:
+   - `VITE_API_URL` = `https://<your-backend-service>.up.railway.app/api`
+     *(Replace with your Railway backend deployment URL)*
+6. Click **Deploy**!
+
+### Option 2: Vercel CLI
+```bash
+npm install -g vercel
+vercel
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+> **Note on SPA Routing**: This repository includes `vercel.json` with rewrite rules to ensure client-side routing works seamlessly across page reloads.

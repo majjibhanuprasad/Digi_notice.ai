@@ -23,7 +23,8 @@ const allowedOrigins = [
 ];
 
 if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
+  const customUrls = process.env.FRONTEND_URL.split(',').map(url => url.trim()).filter(Boolean);
+  allowedOrigins.push(...customUrls);
 }
 
 export const corsFirewall = cors({
@@ -33,8 +34,13 @@ export const corsFirewall = cors({
       return callback(null, true);
     }
 
-    // Exact matches
+    // Exact matches from allowed list
     if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Allow all Vercel deployment domains (*.vercel.app)
+    if (/^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/.test(origin) || origin.endsWith('.vercel.app')) {
       return callback(null, true);
     }
 

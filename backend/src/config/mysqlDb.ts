@@ -3,11 +3,12 @@ import mysql from 'mysql2/promise';
 export let USE_MYSQL_DB = false;
 export let pool: mysql.Pool | null = null;
 
-const MYSQL_HOST = process.env.MYSQL_HOST || 'localhost';
-const MYSQL_PORT = parseInt(process.env.MYSQL_PORT || '3306', 10);
-const MYSQL_USER = process.env.MYSQL_USER || 'root';
-const MYSQL_PASSWORD = process.env.MYSQL_PASSWORD || '';
-const MYSQL_DATABASE = process.env.MYSQL_DATABASE || 'diginotice';
+const MYSQL_HOST = process.env.MYSQLHOST || process.env.MYSQL_HOST || 'localhost';
+const MYSQL_PORT = parseInt(process.env.MYSQLPORT || process.env.MYSQL_PORT || '3306', 10);
+const MYSQL_USER = process.env.MYSQLUSER || process.env.MYSQL_USER || 'root';
+const MYSQL_PASSWORD = process.env.MYSQLPASSWORD || process.env.MYSQL_PASSWORD || '';
+const MYSQL_DATABASE = process.env.MYSQLDATABASE || process.env.MYSQL_DATABASE || 'diginotice';
+const MYSQL_URL = process.env.MYSQL_URL || process.env.DATABASE_URL;
 
 // Table Creation Scripts
 const TABLE_DDLS: Record<string, string> = {
@@ -155,31 +156,46 @@ const TABLE_DDLS: Record<string, string> = {
 
 export const connectMySQL = async (): Promise<boolean> => {
   try {
-    console.log(`Connecting to MySQL Server at ${MYSQL_HOST}:${MYSQL_PORT}...`);
+    if (MYSQL_URL) {
+      console.log('Connecting to MySQL via URL connection string...');
+      pool = mysql.createPool({
+        uri: MYSQL_URL,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        connectTimeout: 10000
+      });
+    } else {
+      console.log(`Connecting to MySQL Server at ${MYSQL_HOST}:${MYSQL_PORT}...`);
 
-    // First connect without database to create target database if needed
-    const setupConn = await mysql.createConnection({
-      host: MYSQL_HOST,
-      port: MYSQL_PORT,
-      user: MYSQL_USER,
-      password: MYSQL_PASSWORD,
-      connectTimeout: 1000
-    });
+      // Try creating database if user has administrative privileges (local development)
+      try {
+        const setupConn = await mysql.createConnection({
+          host: MYSQL_HOST,
+          port: MYSQL_PORT,
+          user: MYSQL_USER,
+          password: MYSQL_PASSWORD,
+          connectTimeout: 10000
+        });
+        await setupConn.query(`CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;`);
+        await setupConn.end();
+      } catch (setupErr: any) {
+        // In cloud environments like Railway, the database is pre-created and restricted
+      }
 
-    await setupConn.query(`CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;`);
-    await setupConn.end();
-
-    // Create pool for diginotice database
-    pool = mysql.createPool({
-      host: MYSQL_HOST,
-      port: MYSQL_PORT,
-      user: MYSQL_USER,
-      password: MYSQL_PASSWORD,
-      database: MYSQL_DATABASE,
-      waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0
-    });
+      // Create pool for target database
+      pool = mysql.createPool({
+        host: MYSQL_HOST,
+        port: MYSQL_PORT,
+        user: MYSQL_USER,
+        password: MYSQL_PASSWORD,
+        database: MYSQL_DATABASE,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        connectTimeout: 10000
+      });
+    }
 
     // Test connection
     const connection = await pool.getConnection();

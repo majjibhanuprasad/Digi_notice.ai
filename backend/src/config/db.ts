@@ -12,14 +12,13 @@ if (!fs.existsSync(DATA_DIR)) {
 }
 
 export const connectDB = async () => {
-  const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/diginotice';
+  const mongoURI = process.env.MONGO_URL || process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/diginotice';
   
   try {
     console.log('Connecting to MongoDB...');
-    // Set a short timeout so it fails quickly if MongoDB isn't running
     mongoose.set('strictQuery', false);
     await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 1000,
+      serverSelectionTimeoutMS: 5000,
     });
     console.log('MongoDB Connected Successfully.');
     USE_MOCK_DB = false;
