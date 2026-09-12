@@ -67,31 +67,31 @@ function App() {
           <Route path="/display-mode" element={<DisplayMode />} />
 
           {/* Protected student views */}
-          <Route 
-            path="/student/dashboard" 
+          <Route
+            path="/student/dashboard"
             element={
               <ProtectedRoute>
                 <StudentDashboard />
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* Protected admin views */}
-          <Route 
-            path="/admin/dashboard" 
+          <Route
+            path="/admin/dashboard"
             element={
               <AdminRoute>
                 <AdminDashboard />
               </AdminRoute>
-            } 
+            }
           />
-          <Route 
-            path="/super-admin/dashboard" 
+          <Route
+            path="/super-admin/dashboard"
             element={
               <AdminRoute>
                 <AdminDashboard />
               </AdminRoute>
-            } 
+            }
           />
 
           {/* Fallback */}
